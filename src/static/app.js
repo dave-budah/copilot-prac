@@ -8,7 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
   async function fetchActivities() {
     activitiesList.innerHTML = "<p>Loading activities...</p>";
     try {
-      const res = await fetch("/activities");
+  // request fresh data to avoid cached responses that can hide updates
+  const res = await fetch("/activities", { cache: "no-store" });
       const activities = await res.json();
 
       // Clear loading message
@@ -49,7 +50,53 @@ document.addEventListener("DOMContentLoaded", () => {
           details.participants.forEach((email) => {
             const li = document.createElement("li");
             li.className = "participant-item";
-            li.textContent = email;
+
+            // Row holds the email and the remove button
+            const row = document.createElement("div");
+            row.className = "participant-row";
+
+            const span = document.createElement("span");
+            span.textContent = email;
+            row.appendChild(span);
+
+            const removeBtn = document.createElement("button");
+            removeBtn.className = "participant-remove";
+            removeBtn.title = `Remove ${email}`;
+            removeBtn.setAttribute("aria-label", `Remove ${email}`);
+            removeBtn.innerHTML = "✖";
+
+            // Click handler - call DELETE endpoint to unregister
+            removeBtn.addEventListener("click", async () => {
+              removeBtn.disabled = true;
+              try {
+                const resp = await fetch(
+                  `/activities/${encodeURIComponent(name)}/participants?email=${encodeURIComponent(email)}`,
+                  { method: "DELETE", cache: "no-store" }
+                );
+
+                const json = await resp.json().catch(() => ({}));
+                if (resp.ok) {
+                  // Refresh activities after successful removal
+                  await fetchActivities();
+                } else {
+                  messageDiv.textContent = json.detail || json.message || "Failed to remove participant";
+                  messageDiv.className = "message error";
+                  messageDiv.classList.remove("hidden");
+                  setTimeout(() => messageDiv.classList.add("hidden"), 4000);
+                }
+              } catch (err) {
+                console.error(err);
+                messageDiv.textContent = "Network error";
+                messageDiv.className = "message error";
+                messageDiv.classList.remove("hidden");
+                setTimeout(() => messageDiv.classList.add("hidden"), 4000);
+              } finally {
+                removeBtn.disabled = false;
+              }
+            });
+
+            row.appendChild(removeBtn);
+            li.appendChild(row);
             ul.appendChild(li);
           });
         } else {
@@ -95,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const response = await fetch(
         `/activities/${encodeURIComponent(activity)}/signup?email=${encodeURIComponent(email)}`,
-        { method: "POST" }
+        { method: "POST", cache: "no-store" }
       );
 
       const result = await response.json();

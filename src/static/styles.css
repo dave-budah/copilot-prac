@@ -154,8 +154,8 @@ footer {
 }
 
 .participants-list {
-  list-style: disc;
-  margin: 10px 0 0 20px;
+  list-style: none; /* hide default bullets */
+  margin: 10px 0 0 0;
   padding: 0;
   max-height: 160px;
   overflow: auto;
@@ -176,4 +176,33 @@ footer {
   color: #666;
   font-style: italic;
   padding: 6px 0;
+}
+
+/* participant row layout */
+.participant-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.participant-remove {
+  background: transparent;
+  border: none;
+  color: #c62828;
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background-color 0.12s, color 0.12s, transform 0.08s;
+}
+.participant-remove:hover {
+  background-color: rgba(198,40,40,0.08);
+  color: #b71c1c;
+  transform: translateY(-1px);
+}
+.participant-remove:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
